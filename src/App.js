@@ -1,3 +1,4 @@
+import {useState} from 'react'
 import './App.css'
 
 import {Switch, Route} from 'react-router-dom'
@@ -10,18 +11,68 @@ import VideoItemDetails from './components/VideoItemDetails'
 import NotFound from './components/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
 
-const App = () => (
-  <Switch>
-    <Route exact path="/login" component={Login} />
+const App = () => {
+  const [isDarkTheme, setIsDarkTheme] = useState(false)
 
-    <ProtectedRoute exact path="/" component={Home} />
-    <ProtectedRoute exact path="/trending" component={Trending} />
-    <ProtectedRoute exact path="/gaming" component={Gaming} />
-    <ProtectedRoute exact path="/saved-videos" component={SavedVideos} />
-    <ProtectedRoute exact path="/videos/:id" component={VideoItemDetails} />
+  const onToggleTheme = () => {
+    setIsDarkTheme(prevState => !prevState)
+  }
 
-    <Route component={NotFound} />
-  </Switch>
-)
+  return (
+    <div className={isDarkTheme ? 'dark-theme' : 'light-theme'}>
+      <Switch>
+        <Route exact path="/login" component={Login} />
+
+        <ProtectedRoute
+          exact
+          path="/"
+          render={() => (
+            <Home isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} />
+          )}
+        />
+
+        <ProtectedRoute
+          exact
+          path="/trending"
+          render={() => (
+            <Trending isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} />
+          )}
+        />
+
+        <ProtectedRoute
+          exact
+          path="/gaming"
+          render={() => (
+            <Gaming isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} />
+          )}
+        />
+
+        <ProtectedRoute
+          exact
+          path="/saved-videos"
+          render={() => (
+            <SavedVideos
+              isDarkTheme={isDarkTheme}
+              onToggleTheme={onToggleTheme}
+            />
+          )}
+        />
+
+        <ProtectedRoute
+          exact
+          path="/videos/:id"
+          render={() => (
+            <VideoItemDetails
+              isDarkTheme={isDarkTheme}
+              onToggleTheme={onToggleTheme}
+            />
+          )}
+        />
+
+        <Route component={NotFound} />
+      </Switch>
+    </div>
+  )
+}
 
 export default App
