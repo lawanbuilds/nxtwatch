@@ -1,8 +1,8 @@
 import {useCallback, useEffect, useState} from 'react'
 import {useParams} from 'react-router-dom'
-import {formatDistanceToNow} from 'date-fns'
 import Cookies from 'js-cookie'
 import styled from 'styled-components'
+import {formatDistanceToNow} from 'date-fns'
 import ReactPlayer from 'react-player'
 import {
   AiOutlineLike,
@@ -16,7 +16,7 @@ import Sidebar from '../Sidebar'
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background-color: ${props => (props.$dark ? '#0f0f0f' : '#f9f9f9')};
+  background-color: ${props => (props.dark ? '#0f0f0f' : '#f9f9f9')};
 `
 
 const BodyContainer = styled.div`
@@ -50,8 +50,8 @@ const StyledReactPlayer = styled(ReactPlayer)`
   height: 100% !important;
 `
 
-const VideoTitle = styled.h1`
-  color: ${props => (props.$dark ? '#ffffff' : '#1e293b')};
+const VideoTitle = styled.p`
+  color: ${props => (props.dark ? '#ffffff' : '#1e293b')};
   font-size: 24px;
   font-weight: 500;
   line-height: 1.4;
@@ -68,7 +68,7 @@ const VideoInfo = styled.div`
   align-items: center;
   gap: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid ${props => (props.$dark ? '#424242' : '#e2e8f0')};
+  border-bottom: 1px solid ${props => (props.dark ? '#424242' : '#e2e8f0')};
 
   @media screen and (max-width: 768px) {
     flex-direction: column;
@@ -78,7 +78,7 @@ const VideoInfo = styled.div`
 `
 
 const ViewText = styled.p`
-  color: ${props => (props.$dark ? '#94a3b8' : '#64748b')};
+  color: ${props => (props.dark ? '#94a3b8' : '#64748b')};
   margin: 0;
   font-size: 14px;
 `
@@ -86,12 +86,6 @@ const ViewText = styled.p`
 const ActionsContainer = styled.div`
   display: flex;
   gap: 24px;
-
-  @media screen and (max-width: 480px) {
-    width: 100%;
-    justify-content: space-between;
-    gap: 12px;
-  }
 `
 
 const ActionButton = styled.button`
@@ -101,11 +95,11 @@ const ActionButton = styled.button`
   border: none;
   background-color: transparent;
   color: ${props => {
-    if (props.$active) {
+    if (props.active) {
       return '#2563eb'
     }
 
-    if (props.$dark) {
+    if (props.dark) {
       return '#94a3b8'
     }
 
@@ -114,47 +108,46 @@ const ActionButton = styled.button`
   cursor: pointer;
   font-size: 16px;
   padding: 4px;
-
-  @media screen and (max-width: 480px) {
-    font-size: 14px;
-  }
 `
 
 const ChannelContainer = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid ${props => (props.$dark ? '#424242' : '#e2e8f0')};
+  border-top: 1px solid ${props => (props.dark ? '#424242' : '#e2e8f0')};
 `
 
 const ChannelLogo = styled.img`
   width: 50px;
   height: 50px;
   border-radius: 50%;
+`
 
-  @media screen and (max-width: 480px) {
-    width: 44px;
-    height: 44px;
-  }
+const ChannelDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 `
 
 const ChannelName = styled.p`
-  color: ${props => (props.$dark ? '#ffffff' : '#1e293b')};
+  color: ${props => (props.dark ? '#ffffff' : '#1e293b')};
   font-weight: 600;
   margin: 0;
 `
 
+const SubscriberCount = styled.p`
+  color: ${props => (props.dark ? '#94a3b8' : '#64748b')};
+  margin: 0;
+  font-size: 14px;
+`
+
 const Description = styled.p`
-  color: ${props => (props.$dark ? '#cbd5e1' : '#475569')};
+  color: ${props => (props.dark ? '#cbd5e1' : '#475569')};
   line-height: 1.6;
   font-size: 15px;
   margin-top: 24px;
-
-  @media screen and (max-width: 768px) {
-    font-size: 14px;
-  }
 `
 
 const LoaderContainer = styled.div`
@@ -190,7 +183,6 @@ const FailureContainer = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: ${props => (props.$dark ? '#ffffff' : '#000000')};
   padding: 20px;
 `
 
@@ -272,6 +264,8 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
     setIsLiked(false)
   }
 
+  // IMPORTANT:
+  // Save the complete videoDetails object.
   const onClickSave = () => {
     if (!videoDetails) {
       return
@@ -279,27 +273,21 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
 
     const savedVideos = JSON.parse(localStorage.getItem('savedVideos') || '[]')
 
-    if (isSaved) {
-      const updatedVideos = savedVideos.filter(
-        video => video.id !== videoDetails.id,
-      )
+    const alreadySaved = savedVideos.some(video => video.id === videoDetails.id)
 
-      localStorage.setItem('savedVideos', JSON.stringify(updatedVideos))
+    let updatedVideos
+
+    if (alreadySaved) {
+      updatedVideos = savedVideos.filter(video => video.id !== videoDetails.id)
 
       setIsSaved(false)
     } else {
-      const alreadySaved = savedVideos.some(
-        video => video.id === videoDetails.id,
-      )
-
-      if (!alreadySaved) {
-        const updatedVideos = [...savedVideos, videoDetails]
-
-        localStorage.setItem('savedVideos', JSON.stringify(updatedVideos))
-      }
+      updatedVideos = [...savedVideos, videoDetails]
 
       setIsSaved(true)
     }
+
+    localStorage.setItem('savedVideos', JSON.stringify(updatedVideos))
   }
 
   const renderContent = () => {
@@ -313,7 +301,7 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
 
     if (isFailure) {
       return (
-        <FailureContainer $dark={isDarkTheme}>
+        <FailureContainer>
           <FailureImage
             src={
               isDarkTheme
@@ -344,10 +332,11 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
           />
         </PlayerContainer>
 
-        <VideoTitle $dark={isDarkTheme}>{videoDetails.title}</VideoTitle>
+        {/* Test expects title in paragraph */}
+        <VideoTitle dark={isDarkTheme}>{videoDetails.title}</VideoTitle>
 
-        <VideoInfo>
-          <ViewText $dark={isDarkTheme}>
+        <VideoInfo dark={isDarkTheme}>
+          <ViewText dark={isDarkTheme}>
             {videoDetails.view_count} views •{' '}
             {formatDistanceToNow(new Date(videoDetails.published_at), {
               addSuffix: true,
@@ -357,8 +346,8 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
           <ActionsContainer>
             <ActionButton
               type="button"
-              $active={isLiked}
-              $dark={isDarkTheme}
+              active={isLiked}
+              dark={isDarkTheme}
               onClick={onClickLike}
             >
               {isLiked ? <AiFillLike /> : <AiOutlineLike />}
@@ -367,8 +356,8 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
 
             <ActionButton
               type="button"
-              $active={isDisliked}
-              $dark={isDarkTheme}
+              active={isDisliked}
+              dark={isDarkTheme}
               onClick={onClickDislike}
             >
               {isDisliked ? <AiFillDislike /> : <AiOutlineDislike />}
@@ -377,8 +366,8 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
 
             <ActionButton
               type="button"
-              $active={isSaved}
-              $dark={isDarkTheme}
+              active={isSaved}
+              dark={isDarkTheme}
               onClick={onClickSave}
             >
               <RiPlayListAddLine />
@@ -387,26 +376,31 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
           </ActionsContainer>
         </VideoInfo>
 
-        <ChannelContainer $dark={isDarkTheme}>
+        <ChannelContainer dark={isDarkTheme}>
           <ChannelLogo
             src={videoDetails.channel.profile_image_url}
             alt="channel logo"
           />
 
-          <ChannelName $dark={isDarkTheme}>
-            {videoDetails.channel.name}
-          </ChannelName>
+          <ChannelDetails>
+            <ChannelName dark={isDarkTheme}>
+              {videoDetails.channel.name}
+            </ChannelName>
+
+            {/* Test expects subscriber_count in paragraph */}
+            <SubscriberCount dark={isDarkTheme}>
+              {videoDetails.channel.subscriber_count} subscribers
+            </SubscriberCount>
+          </ChannelDetails>
         </ChannelContainer>
 
-        <Description $dark={isDarkTheme}>
-          {videoDetails.description}
-        </Description>
+        <Description dark={isDarkTheme}>{videoDetails.description}</Description>
       </VideoContainer>
     )
   }
 
   return (
-    <PageContainer $dark={isDarkTheme} data-testid="videoItemDetails">
+    <PageContainer dark={isDarkTheme}>
       <Header isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} />
 
       <BodyContainer>

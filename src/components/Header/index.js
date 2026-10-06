@@ -1,4 +1,5 @@
 import {useState} from 'react'
+import Popup from 'reactjs-popup'
 import {Link, useHistory} from 'react-router-dom'
 import Cookies from 'js-cookie'
 import {FiSun, FiMoon, FiLogOut} from 'react-icons/fi'
@@ -24,6 +25,18 @@ const Logo = styled.img`
 
   @media screen and (max-width: 768px) {
     width: 110px;
+  }
+`
+
+const ProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+
+  @media screen and (max-width: 768px) {
+    width: 32px;
+    height: 32px;
   }
 `
 
@@ -63,20 +76,9 @@ const LogoutButton = styled.button`
   }
 `
 
-const PopupOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`
-
 const PopupContainer = styled.div`
   width: 400px;
-  max-width: 100%;
+  max-width: 90%;
   padding: 32px;
   border-radius: 8px;
   background-color: ${props => (props.$dark ? '#212121' : '#ffffff')};
@@ -115,14 +117,6 @@ const Header = ({isDarkTheme, onToggleTheme}) => {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false)
   const history = useHistory()
 
-  const onClickLogout = () => {
-    setShowLogoutPopup(true)
-  }
-
-  const onClickCancel = () => {
-    setShowLogoutPopup(false)
-  }
-
   const onClickConfirm = () => {
     Cookies.remove('jwt_token')
     setShowLogoutPopup(false)
@@ -130,60 +124,66 @@ const Header = ({isDarkTheme, onToggleTheme}) => {
   }
 
   return (
-    <>
-      <HeaderContainer $dark={isDarkTheme}>
-        <Link to="/">
-          <Logo
-            src={
-              isDarkTheme
-                ? 'https://assets.ccbp.in/frontend/react-js/nxt-watch-logo-dark-theme-img.png'
-                : 'https://assets.ccbp.in/frontend/react-js/nxt-watch-logo-light-theme-img.png'
-            }
-            alt="website logo"
-          />
-        </Link>
+    <HeaderContainer $dark={isDarkTheme}>
+      <Link to="/">
+        <Logo
+          src={
+            isDarkTheme
+              ? 'https://assets.ccbp.in/frontend/react-js/nxt-watch-logo-dark-theme-img.png'
+              : 'https://assets.ccbp.in/frontend/react-js/nxt-watch-logo-light-theme-img.png'
+          }
+          alt="website logo"
+        />
+      </Link>
 
-        <ActionsContainer>
-          <IconButton
-            type="button"
-            data-testid="theme"
-            $dark={isDarkTheme}
-            onClick={onToggleTheme}
-          >
-            {isDarkTheme ? <FiSun /> : <FiMoon />}
-          </IconButton>
+      <ActionsContainer>
+        <IconButton
+          type="button"
+          data-testid="theme"
+          $dark={isDarkTheme}
+          onClick={onToggleTheme}
+        >
+          {isDarkTheme ? <FiSun /> : <FiMoon />}
+        </IconButton>
 
-          <LogoutButton type="button" onClick={onClickLogout}>
-            <FiLogOut />
-            {' Logout'}
-          </LogoutButton>
-        </ActionsContainer>
-      </HeaderContainer>
+        <ProfileImage
+          src="https://assets.ccbp.in/frontend/react-js/nxt-watch-profile-img.png"
+          alt="profile"
+        />
 
-      {showLogoutPopup && (
-        <PopupOverlay>
-          <PopupContainer $dark={isDarkTheme}>
-            <PopupText $dark={isDarkTheme}>
-              Are you sure you want to logout?
-            </PopupText>
+        <LogoutButton type="button" onClick={() => setShowLogoutPopup(true)}>
+          <FiLogOut />
+          {' Logout'}
+        </LogoutButton>
+      </ActionsContainer>
 
-            <PopupActions>
-              <CancelButton
-                type="button"
-                $dark={isDarkTheme}
-                onClick={onClickCancel}
-              >
-                Cancel
-              </CancelButton>
+      <Popup
+        open={showLogoutPopup}
+        modal
+        closeOnDocumentClick
+        onClose={() => setShowLogoutPopup(false)}
+      >
+        <PopupContainer $dark={isDarkTheme}>
+          <PopupText $dark={isDarkTheme}>
+            Are you sure, you want to logout
+          </PopupText>
 
-              <ConfirmButton type="button" onClick={onClickConfirm}>
-                Confirm
-              </ConfirmButton>
-            </PopupActions>
-          </PopupContainer>
-        </PopupOverlay>
-      )}
-    </>
+          <PopupActions>
+            <CancelButton
+              type="button"
+              $dark={isDarkTheme}
+              onClick={() => setShowLogoutPopup(false)}
+            >
+              Cancel
+            </CancelButton>
+
+            <ConfirmButton type="button" onClick={onClickConfirm}>
+              Confirm
+            </ConfirmButton>
+          </PopupActions>
+        </PopupContainer>
+      </Popup>
+    </HeaderContainer>
   )
 }
 

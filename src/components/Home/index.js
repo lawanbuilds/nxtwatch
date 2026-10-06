@@ -1,10 +1,17 @@
 import {useState, useEffect, useCallback} from 'react'
+
 import {Link} from 'react-router-dom'
+
 import {formatDistanceToNow} from 'date-fns'
+
 import Cookies from 'js-cookie'
+
 import styled from 'styled-components'
+
 import {FiSearch, FiX} from 'react-icons/fi'
+
 import Header from '../Header'
+
 import Sidebar from '../Sidebar'
 
 const HomeContainer = styled.div`
@@ -53,7 +60,7 @@ const BannerLogo = styled.img`
   }
 `
 
-const BannerHeading = styled.h1`
+const BannerText = styled.p`
   max-width: 500px;
   color: ${props => (props.dark ? '#ffffff' : '#000000')};
   font-size: 28px;
@@ -240,12 +247,18 @@ const RetryButton = styled.button`
 `
 
 const EmptyContainer = styled.div`
-  min-height: 300px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  padding: 20px;
+`
+
+const EmptyImage = styled.img`
+  width: 300px;
+  max-width: 100%;
 `
 
 const Home = ({isDarkTheme, onToggleTheme}) => {
@@ -330,11 +343,22 @@ const Home = ({isDarkTheme, onToggleTheme}) => {
     if (videos.length === 0) {
       return (
         <EmptyContainer>
-          <ContentHeading dark={isDarkTheme}>No Videos Found</ContentHeading>
+          <EmptyImage
+            src="https://assets.ccbp.in/frontend/react-js/nxt-watch-no-search-results-img.png"
+            alt="no videos"
+          />
+
+          <ContentHeading dark={isDarkTheme}>
+            No Search results found
+          </ContentHeading>
 
           <ContentText dark={isDarkTheme}>
-            Try different search words
+            Try different key words or remove search filter
           </ContentText>
+
+          <RetryButton type="button" onClick={getVideos}>
+            Retry
+          </RetryButton>
         </EmptyContainer>
       )
     }
@@ -393,9 +417,9 @@ const Home = ({isDarkTheme, onToggleTheme}) => {
                 alt="nxt watch logo"
               />
 
-              <BannerHeading dark={isDarkTheme}>
+              <BannerText dark={isDarkTheme}>
                 Buy Nxt Watch Premium prepaid plans with UPI
-              </BannerHeading>
+              </BannerText>
 
               <GetItButton dark={isDarkTheme}>GET IT NOW</GetItButton>
 

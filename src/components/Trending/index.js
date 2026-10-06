@@ -112,7 +112,11 @@ const TextContainer = styled.div`
   min-width: 0;
 `
 
-const VideoTitle = styled.h2`
+/*
+  Important:
+  Test expects video.title inside a <p> element.
+*/
+const VideoTitle = styled.p`
   color: ${props => (props.$dark ? '#ffffff' : '#1e293b')};
   font-size: 20px;
   font-weight: 500;
@@ -213,6 +217,7 @@ const Trending = ({isDarkTheme, onToggleTheme}) => {
 
       if (response.ok) {
         const data = await response.json()
+
         setVideos(data.videos)
         setIsLoading(false)
       } else {

@@ -20,9 +20,17 @@ const SidebarContainer = styled.aside`
   }
 `
 
-const NavList = styled.nav`
+const NavList = styled.ul`
   display: flex;
   flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+`
+
+const NavItem = styled.li`
+  margin: 0;
+  padding: 0;
 `
 
 const StyledNavLink = styled(NavLink)`
@@ -66,36 +74,97 @@ const ContactText = styled.p`
   line-height: 1.5;
 `
 
-const SocialText = styled.p`
+const SocialHeading = styled.p`
   font-weight: 600;
 `
+
+const SocialIconsList = styled.ul`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0;
+  margin: 16px 0;
+  list-style-type: none;
+`
+
+const SocialIcon = styled.img`
+  width: 30px;
+  height: 30px;
+`
+
+const navItemsList = [
+  {
+    id: 'HOME',
+    name: 'Home',
+    path: '/',
+    icon: AiFillHome,
+  },
+  {
+    id: 'TRENDING',
+    name: 'Trending',
+    path: '/trending',
+    icon: AiFillFire,
+  },
+  {
+    id: 'GAMING',
+    name: 'Gaming',
+    path: '/gaming',
+    icon: SiYoutubegaming,
+  },
+  {
+    id: 'SAVED_VIDEOS',
+    name: 'Saved videos',
+    path: '/saved-videos',
+    icon: RiPlayListAddFill,
+  },
+]
 
 const Sidebar = ({isDarkTheme}) => (
   <SidebarContainer $dark={isDarkTheme}>
     <NavList>
-      <StyledNavLink exact to="/" $dark={isDarkTheme}>
-        <AiFillHome />
-        <NavText>Home</NavText>
-      </StyledNavLink>
+      {navItemsList.map(item => {
+        const Icon = item.icon
 
-      <StyledNavLink to="/trending" $dark={isDarkTheme}>
-        <AiFillFire />
-        <NavText>Trending</NavText>
-      </StyledNavLink>
-
-      <StyledNavLink to="/gaming" $dark={isDarkTheme}>
-        <SiYoutubegaming />
-        <NavText>Gaming</NavText>
-      </StyledNavLink>
-
-      <StyledNavLink to="/saved-videos" $dark={isDarkTheme}>
-        <RiPlayListAddFill />
-        <NavText>Saved videos</NavText>
-      </StyledNavLink>
+        return (
+          <NavItem key={item.id}>
+            <StyledNavLink
+              exact={item.path === '/'}
+              to={item.path}
+              $dark={isDarkTheme}
+            >
+              <Icon />
+              <NavText>{item.name}</NavText>
+            </StyledNavLink>
+          </NavItem>
+        )
+      })}
     </NavList>
 
     <ContactContainer $dark={isDarkTheme}>
-      <SocialText>CONTACT US</SocialText>
+      <SocialHeading>CONTACT US</SocialHeading>
+
+      <SocialIconsList>
+        <li>
+          <SocialIcon
+            src="https://assets.ccbp.in/frontend/react-js/nxt-watch-facebook-logo-img.png"
+            alt="facebook logo"
+          />
+        </li>
+
+        <li>
+          <SocialIcon
+            src="https://assets.ccbp.in/frontend/react-js/nxt-watch-twitter-logo-img.png"
+            alt="twitter logo"
+          />
+        </li>
+
+        <li>
+          <SocialIcon
+            src="https://assets.ccbp.in/frontend/react-js/nxt-watch-linked-in-logo-img.png"
+            alt="linked in logo"
+          />
+        </li>
+      </SocialIconsList>
 
       <ContactText>
         Enjoy! Now to see your channels and recommendations!
