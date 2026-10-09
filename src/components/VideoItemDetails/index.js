@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect, useState, useContext} from 'react'
 import {useParams} from 'react-router-dom'
 import Cookies from 'js-cookie'
 import styled from 'styled-components'
@@ -13,6 +13,7 @@ import {
 import {RiPlayListAddLine} from 'react-icons/ri'
 import Header from '../Header'
 import Sidebar from '../Sidebar'
+import NxtWatchContext from '../../context/NxtWatchContext'
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -200,15 +201,26 @@ const RetryButton = styled.button`
   cursor: pointer;
 `
 
-const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
+const VideoItemDetails = ({isDarkTheme: isDarkThemeProp, onToggleTheme}) => {
   const {id} = useParams()
+  const contextValue = useContext(NxtWatchContext) || {}
+  const {
+    savedVideosList = [],
+    addSavedVideo,
+    isDarkTheme: isDarkThemeContext,
+  } = contextValue
+
+  const isDarkTheme = isDarkThemeContext ?? isDarkThemeProp ?? false
 
   const [videoDetails, setVideoDetails] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isFailure, setIsFailure] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [isDisliked, setIsDisliked] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
+
+  const isSaved = videoDetails
+    ? savedVideosList.some(video => video.id === videoDetails.id)
+    : false
 
   const getVideoDetails = useCallback(async () => {
     setIsLoading(true)
@@ -226,19 +238,7 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
 
       if (response.ok) {
         const data = await response.json()
-        const currentVideo = data.video_details
-
-        setVideoDetails(currentVideo)
-
-        const savedVideos = JSON.parse(
-          localStorage.getItem('savedVideos') || '[]',
-        )
-
-        const alreadySaved = savedVideos.some(
-          video => video.id === currentVideo.id,
-        )
-
-        setIsSaved(alreadySaved)
+        setVideoDetails(data.video_details)
         setIsLoading(false)
       } else {
         setIsFailure(true)
@@ -264,30 +264,11 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
     setIsLiked(false)
   }
 
-  // IMPORTANT:
-  // Save the complete videoDetails object.
   const onClickSave = () => {
-    if (!videoDetails) {
-      return
+    if (!videoDetails) return
+    if (addSavedVideo) {
+      addSavedVideo(videoDetails)
     }
-
-    const savedVideos = JSON.parse(localStorage.getItem('savedVideos') || '[]')
-
-    const alreadySaved = savedVideos.some(video => video.id === videoDetails.id)
-
-    let updatedVideos
-
-    if (alreadySaved) {
-      updatedVideos = savedVideos.filter(video => video.id !== videoDetails.id)
-
-      setIsSaved(false)
-    } else {
-      updatedVideos = [...savedVideos, videoDetails]
-
-      setIsSaved(true)
-    }
-
-    localStorage.setItem('savedVideos', JSON.stringify(updatedVideos))
   }
 
   const renderContent = () => {
@@ -312,7 +293,6 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
           />
 
           <h1>Oops! Something Went Wrong</h1>
-
           <p>We are having some trouble to complete your request.</p>
 
           <RetryButton type="button" onClick={getVideoDetails}>
@@ -332,7 +312,6 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
           />
         </PlayerContainer>
 
-        {/* Test expects title in paragraph */}
         <VideoTitle dark={isDarkTheme}>{videoDetails.title}</VideoTitle>
 
         <VideoInfo dark={isDarkTheme}>
@@ -378,18 +357,17 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
 
         <ChannelContainer dark={isDarkTheme}>
           <ChannelLogo
-            src={videoDetails.channel.profile_image_url}
+            src={videoDetails.channel?.profile_image_url}
             alt="channel logo"
           />
 
           <ChannelDetails>
             <ChannelName dark={isDarkTheme}>
-              {videoDetails.channel.name}
+              {videoDetails.channel?.name}
             </ChannelName>
 
-            {/* Test expects subscriber_count in paragraph */}
             <SubscriberCount dark={isDarkTheme}>
-              {videoDetails.channel.subscriber_count} subscribers
+              {videoDetails.channel?.subscriber_count} subscribers
             </SubscriberCount>
           </ChannelDetails>
         </ChannelContainer>
@@ -400,7 +378,7 @@ const VideoItemDetails = ({isDarkTheme, onToggleTheme}) => {
   }
 
   return (
-    <PageContainer dark={isDarkTheme}>
+    <PageContainer dark={isDarkTheme} data-testid="videoItemDetails">
       <Header isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} />
 
       <BodyContainer>

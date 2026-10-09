@@ -56,6 +56,9 @@ const IconButton = styled.button`
   color: ${props => (props.$dark ? '#ffffff' : '#1e293b')};
   cursor: pointer;
   font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   @media screen and (max-width: 768px) {
     font-size: 21px;
@@ -69,6 +72,9 @@ const LogoutButton = styled.button`
   color: #3b82f6;
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
   @media screen and (max-width: 768px) {
     padding: 7px 10px;
@@ -113,7 +119,7 @@ const ConfirmButton = styled.button`
   cursor: pointer;
 `
 
-const Header = ({isDarkTheme, onToggleTheme}) => {
+const Header = ({isDarkTheme = false, onToggleTheme = () => {}}) => {
   const [showLogoutPopup, setShowLogoutPopup] = useState(false)
   const history = useHistory()
 
@@ -140,6 +146,7 @@ const Header = ({isDarkTheme, onToggleTheme}) => {
         <IconButton
           type="button"
           data-testid="theme"
+          aria-label="Toggle theme"
           $dark={isDarkTheme}
           onClick={onToggleTheme}
         >
@@ -153,7 +160,7 @@ const Header = ({isDarkTheme, onToggleTheme}) => {
 
         <LogoutButton type="button" onClick={() => setShowLogoutPopup(true)}>
           <FiLogOut />
-          {' Logout'}
+          Logout
         </LogoutButton>
       </ActionsContainer>
 

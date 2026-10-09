@@ -1,12 +1,13 @@
-import {useEffect, useState} from 'react'
+import {useContext} from 'react'
 import {Link} from 'react-router-dom'
 import styled from 'styled-components'
 import Header from '../Header'
 import Sidebar from '../Sidebar'
+import NxtWatchContext from '../../context/NxtWatchContext'
 
 const SavedVideosContainer = styled.div`
   min-height: 100vh;
-  background-color: ${props => (props.dark ? '#0f0f0f' : '#f9f9f9')};
+  background-color: ${props => (props.$dark ? '#0f0f0f' : '#f9f9f9')};
 `
 
 const BodyContainer = styled.div`
@@ -23,48 +24,72 @@ const MainContainer = styled.main`
   }
 `
 
+const Banner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  margin-bottom: 28px;
+  background-color: ${props => (props.$dark ? '#181818' : '#ebebeb')};
+`
+
+const BannerIcon = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: ${props => (props.$dark ? '#000000' : '#d7dfe9')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff0000;
+  font-size: 28px;
+`
+
+const BannerHeading = styled.h1`
+  color: ${props => (props.$dark ? '#ffffff' : '#1e293b')};
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+`
+
 const VideosList = styled.ul`
   padding: 0;
   margin: 0;
   list-style-type: none;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-
-  @media screen and (max-width: 1100px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media screen and (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-
-  @media screen and (max-width: 480px) {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 `
 
 const VideoItem = styled.li`
-  list-style-type: none;
   min-width: 0;
 `
 
 const VideoLink = styled(Link)`
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
   text-decoration: none;
+
+  @media screen and (max-width: 576px) {
+    flex-direction: column;
+  }
 `
 
 const Thumbnail = styled.img`
-  width: 100%;
+  width: 40%;
+  max-width: 400px;
   display: block;
+  flex-shrink: 0;
+
+  @media screen and (max-width: 576px) {
+    width: 100%;
+    max-width: 100%;
+  }
 `
 
-const ChannelName = styled.p`
-  color: ${props => (props.dark ? '#94a3b8' : '#64748b')};
-  font-size: 14px;
-  margin: 8px 0;
+const VideoDetails = styled.div`
+  min-width: 0;
 `
 
 const EmptyContainer = styled.div`
@@ -75,6 +100,14 @@ const EmptyContainer = styled.div`
   align-items: center;
   text-align: center;
   padding: 20px;
+
+  h1 {
+    color: ${props => (props.$dark ? '#ffffff' : '#1e293b')};
+  }
+
+  p {
+    color: ${props => (props.$dark ? '#cbd5e1' : '#64748b')};
+  }
 `
 
 const EmptyImage = styled.img`
@@ -82,62 +115,64 @@ const EmptyImage = styled.img`
   max-width: 100%;
 `
 
-const SavedVideos = ({isDarkTheme, onToggleTheme}) => {
-  const [savedVideos, setSavedVideos] = useState([])
+const SavedVideos = ({isDarkTheme: isDarkThemeProp, onToggleTheme}) => {
+  const contextValue = useContext(NxtWatchContext) || {}
+  const {savedVideosList = [], isDarkTheme: isDarkThemeContext} = contextValue
 
-  useEffect(() => {
-    const videos = JSON.parse(localStorage.getItem('savedVideos') || '[]')
+  const isDarkTheme = isDarkThemeContext ?? isDarkThemeProp ?? false
 
-    setSavedVideos(videos)
-  }, [])
-
-  const renderSavedVideos = () => (
-    <VideosList>
-      {savedVideos.map(video => (
-        <VideoItem key={video.id}>
-          <VideoLink to={`/videos/${video.id}`}>
-            <Thumbnail src={video.thumbnail_url} alt="video thumbnail" />
-
-            {/* Test expects title inside paragraph */}
-            <p>{video.title}</p>
-
-            <ChannelName dark={isDarkTheme}>{video.channel.name}</ChannelName>
-
-            {/* Test expects view_count inside paragraph */}
-            <p>{video.view_count}</p>
-
-            {/* Test expects published_at inside paragraph */}
-            <p>{video.published_at}</p>
-          </VideoLink>
-        </VideoItem>
-      ))}
-    </VideosList>
-  )
+  const videos = Array.isArray(savedVideosList)
+    ? savedVideosList
+        .map(savedVideo => savedVideo.video_details || savedVideo)
+        .filter(video => video && video.id)
+    : []
 
   return (
-    <SavedVideosContainer dark={isDarkTheme}>
+    <SavedVideosContainer $dark={isDarkTheme} data-testid="savedVideos">
       <Header isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} />
 
       <BodyContainer>
         <Sidebar isDarkTheme={isDarkTheme} />
 
         <MainContainer>
-          {/* IMPORTANT: plain HTML h1 */}
-          <h1>Saved Videos</h1>
-
-          {savedVideos.length === 0 ? (
-            <EmptyContainer>
+          {videos.length === 0 ? (
+            <EmptyContainer $dark={isDarkTheme}>
               <EmptyImage
                 src="https://assets.ccbp.in/frontend/react-js/nxt-watch-no-saved-videos-img.png"
                 alt="no saved videos"
               />
-
               <h1>No saved videos found</h1>
-
               <p>You can save your videos while watching them</p>
             </EmptyContainer>
           ) : (
-            renderSavedVideos()
+            <>
+              <Banner $dark={isDarkTheme} data-testid="banner">
+                <BannerIcon $dark={isDarkTheme} aria-hidden="true">
+                  ▶
+                </BannerIcon>
+                <BannerHeading $dark={isDarkTheme}>Saved Videos</BannerHeading>
+              </Banner>
+
+              <VideosList>
+                {videos.map(video => (
+                  <VideoItem key={video.id}>
+                    <VideoLink to={`/videos/${video.id}`}>
+                      <Thumbnail
+                        src={video.thumbnail_url}
+                        alt="video thumbnail"
+                      />
+
+                      <VideoDetails>
+                        <p>{video.title}</p>
+                        <p>{video.channel?.name || video.channel_name || ''}</p>
+                        <p>{video.view_count}</p>
+                        <p>{video.published_at}</p>
+                      </VideoDetails>
+                    </VideoLink>
+                  </VideoItem>
+                ))}
+              </VideosList>
+            </>
           )}
         </MainContainer>
       </BodyContainer>
